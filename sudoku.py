@@ -78,12 +78,11 @@ class Sudoku:
         status = self.s_model.solve(pulp.GLPK(msg=0))
         return status == pulp.LpStatusOptimal
 
-
+print("Enter 2 number, m and n with blank space between them")
 (m,n) = map(int, input().split())
 puzzle = Sudoku(m,n)
 
-N = m*n
-
+print("Enter all the lines for the constraints")
 for i in range(1, puzzle.totalplus):
     row = input().split()
     for j in range(1, puzzle.totalplus):
