@@ -4,7 +4,7 @@
 
 
 import pulp
-
+import sys
 
 def variable(i,j,k):
 
@@ -17,29 +17,29 @@ class Sudoku:
         #Initializing m rows and n columns
         self.m=m
         self.n=n
-        total = m * n
-        totalplus= total+1
+        self.total = m * n
+        self.totalplus= self.total+1
 
         #Defining the problem
         self.s_model = pulp.LpProblem("SudokuProblem", pulp.LpMinimize)
 
         x_names = [variable(i,j,k)
-                   for i in range(1, totalplus)
-                   for j in range(1, totalplus)
-                   for k in range(1, totalplus)]
+                   for i in range(1, self.totalplus)
+                   for j in range(1, self.totalplus)
+                   for k in range(1, self.totalplus)]
 
 
-        self.x = pulp.LpVariable("%s", x_names, lowBound=0,upBound=1, cat=pulp.LpInteger)
+        self.x = pulp.LpVariable.dict("%s", x_names, lowBound=0, upBound=1, cat=pulp.LpInteger)
 
-        for i in range(1, totalplus):
-            for k in range(1, totalplus):
+        for i in range(1, self.totalplus):
+            for k in range(1, self.totalplus):
                 self.s_model += sum([self.x[variable(i,j,k)]
-                                     for j in range(1,totalplus)]) == 1
+                                     for j in range(1, self.totalplus)]) == 1
 
-        for j in range(1, totalplus):
-            for k in range(1, totalplus):
+        for j in range(1, self.totalplus):
+            for k in range(1, self.totalplus):
                 self.s_model += sum([self.x[variable(i,j,k)]
-                                     for i in range(1,totalplus)]) == 1
+                                     for i in range(1,self.totalplus)]) == 1
 
         for I in range(1, n):
             for J in range(1, m):
@@ -48,14 +48,14 @@ class Sudoku:
                 block_ivalues = range(i_min, i_min + m)
                 block_jvalues = range(j_min, j_min + n)
 
-                for k in range(1, totalplus):
+                for k in range(1, self.totalplus):
                     self.s_model += sum([self.x[variable(i,j,k)]
                                          for i in block_ivalues
                                          for j in block_jvalues]) == 1
-        for i in range(1, totalplus):
-            for j in range(1, totalplus):
+        for i in range(1, self.totalplus):
+            for j in range(1, self.totalplus):
                 self.s_model += sum([self.x[variable(i,j,k)]
-                                     for k in range(1, totalplus)]) == 1
+                                     for k in range(1, self.totalplus)]) == 1
 
 
     def get_cell_value(self, i, j):
@@ -79,3 +79,26 @@ class Sudoku:
         return status == pulp.LpStatusOptimal
 
 
+(m,n) = map(int, input().split())
+puzzle = Sudoku(m,n)
+
+N = m*n
+
+for i in range(1, puzzle.totalplus):
+    row = input().split()
+    for j in range(1, puzzle.totalplus):
+        k=row[j-1]
+        if k.isdigit():
+            puzzle.set_cell_value(i,j,int(k))
+
+if not puzzle.solveProb():
+    sys.stdout.write("Sudoku puzzle is not valid\n")
+    exit(1)
+
+digits = len(str(puzzle.total))
+pad = lambda k: str(k).rjust(digits)
+for i in range(1, puzzle.totalplus):
+    for j in range(1, puzzle.totalplus):
+        k = puzzle.get_cell_value(i,j)
+        sys.stdout.write("%s" % pad(k) + (" " if j<puzzle.total else ""))
+    sys.stdout.write("\n")
